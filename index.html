@@ -206,9 +206,42 @@
                           <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                         </span>
                     </div>
-                    <button @click="showTemplateModal = true" class="text-xs text-emerald-400 font-medium flex items-center gap-1 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/20 transition">
-                        <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i> Templates
-                    </button>
+             <!-- MODAL: WORKOUT TEMPLATES -->
+<div x-show="showTemplateModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" x-cloak>
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-sm w-full space-y-4 max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center">
+            <h3 class="font-bold text-slate-100">Workout Templates</h3>
+            <button @click="showTemplateModal = false" class="text-slate-500 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+
+        <!-- List of Saved Templates (Dengan Tombol Delete) -->
+        <div class="space-y-2">
+            <template x-for="(tmpl, tIdx) in workoutTemplates" :key="tIdx">
+                <div class="bg-slate-800/60 p-3 rounded-xl flex justify-between items-center border border-slate-700/40">
+                    <div>
+                        <div class="font-semibold text-sm text-slate-200" x-text="tmpl.title"></div>
+                        <div class="text-[10px] text-slate-400" x-text="tmpl.exercises.length + ' exercises'"></div>
+                    </div>
+                    
+                    <!-- Aksi: Tombol Load + Tombol Delete -->
+                    <div class="flex items-center gap-1.5">
+                        <button @click="loadTemplate(tmpl)" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition">
+                            Load
+                        </button>
+                        <button @click="deleteTemplate(tIdx)" class="p-1.5 text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg border border-rose-500/20 transition" title="Delete Template">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </template>
+            <div x-show="workoutTemplates.length === 0" class="text-xs text-slate-500 italic py-2 text-center">No saved templates yet.</div>
+        </div>
+
+        <button @click="saveCurrentAsTemplate()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-semibold rounded-xl border border-slate-700 transition">
+            + Save Current Session as Template
+        </button>
+    </div>
+</div>
                 </div>
 
                 <!-- Hevy Style Live Stopwatch Controller -->
