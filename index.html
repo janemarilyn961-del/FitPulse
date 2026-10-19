@@ -546,23 +546,34 @@
                         sets: [{ weight: 0, reps: 0 }]
                     });
                     this.saveDateData();
+                    // Pastikan ikon langsung di-render ulang
                     this.$nextTick(() => this.refreshIcons());
                 },
 
                 removeExercise(idx) {
                     this.activeSession.exercises.splice(idx, 1);
                     this.saveDateData();
+                    this.$nextTick(() => this.refreshIcons());
                 },
 
                 addSet(exIdx) {
                     this.activeSession.exercises[exIdx].sets.push({ weight: 0, reps: 0 });
                     this.saveDateData();
+                    // Pastikan ikon tong sampah di set baru langsung muncul
                     this.$nextTick(() => this.refreshIcons());
                 },
 
                 removeSet(exIdx, setIdx) {
                     this.activeSession.exercises[exIdx].sets.splice(setIdx, 1);
                     this.saveDateData();
+                    this.$nextTick(() => this.refreshIcons());
+                },
+
+                loadTemplate(tmpl) {
+                    this.activeSession.exercises = JSON.parse(JSON.stringify(tmpl.exercises));
+                    this.showTemplateModal = false;
+                    this.saveDateData();
+                    this.$nextTick(() => this.refreshIcons());
                 },
 
                 saveWorkoutData() {
