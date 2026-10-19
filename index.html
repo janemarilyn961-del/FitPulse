@@ -152,7 +152,7 @@
             </div>
         </div>
 
-       <!-- TAB 2: NUTRITION -->
+        <!-- TAB 2: NUTRITION -->
         <div x-show="currentTab === 'nutrition'" class="space-y-6" x-cloak>
             <!-- Target Settings Bar -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex justify-between items-center">
@@ -194,26 +194,6 @@
                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
                                     </div>
-                                </div>
-                            </template>
-                            <div x-show="mealItems.length === 0" class="text-xs text-slate-500 italic py-1">No items logged yet</div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </div>
-
-                        <!-- Food Items -->
-                        <div class="space-y-2">
-                            <template x-for="(food, idx) in mealItems" :key="idx">
-                                <div class="flex justify-between items-center bg-slate-800/30 p-2.5 rounded-xl border border-slate-800/50">
-                                    <div>
-                                        <div class="text-sm font-medium text-slate-200" x-text="food.name"></div>
-                                        <div class="text-[11px] text-slate-400" x-text="food.calories + ' kcal • P:' + food.p + 'g C:' + food.c + 'g F:' + food.f + 'g'"></div>
-                                    </div>
-                                    <button @click="removeFood(mealName, idx)" class="text-slate-500 hover:text-rose-400 p-1 transition">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
                                 </div>
                             </template>
                             <div x-show="mealItems.length === 0" class="text-xs text-slate-500 italic py-1">No items logged yet</div>
@@ -313,10 +293,13 @@
         </div>
     </div>
 
-    <!-- MODAL: ADD FOOD ITEM -->
+    <!-- MODAL: ADD / EDIT FOOD ITEM -->
     <div x-show="showFoodModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" x-transition x-cloak>
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-sm w-full space-y-3" @click.away="showFoodModal = false">
-            <h3 class="font-bold text-slate-100">Add Food to <span class="capitalize text-emerald-400" x-text="activeMeal"></span></h3>
+            <h3 class="font-bold text-slate-100">
+                <span x-text="editIndex === null ? 'Add Food to ' : 'Edit Food in '"></span>
+                <span class="capitalize text-emerald-400" x-text="activeMeal"></span>
+            </h3>
             <input type="text" x-model="newFood.name" placeholder="Food Name" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl p-2 text-sm focus:outline-none">
             <div class="grid grid-cols-2 gap-2">
                 <input type="number" x-model.number="newFood.calories" placeholder="Calories" class="bg-slate-800 border border-slate-700 text-white rounded-xl p-2 text-sm focus:outline-none">
@@ -326,7 +309,7 @@
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button @click="showFoodModal = false" class="px-4 py-2 text-xs text-slate-400 hover:text-white">Cancel</button>
-                <button @click="saveFoodItem()" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">Add Item</button>
+                <button @click="saveFoodItem()" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl" x-text="editIndex === null ? 'Add Item' : 'Save Changes'"></button>
             </div>
         </div>
     </div>
@@ -389,6 +372,7 @@
                 showFoodModal: false,
                 showTemplateModal: false,
                 activeMeal: '',
+                editIndex: null, // Indeks untuk melacak item yang sedang diedit
 
                 // Target Nutrition
                 targets: { calories: 2000, p: 150, c: 200, f: 65 },
@@ -418,7 +402,6 @@
                         this.initChart();
                     });
 
-                    // Re-render icons on tab or modal change
                     this.$watch('currentTab', () => {
                         this.$nextTick(() => {
                             this.refreshIcons();
@@ -444,7 +427,6 @@
                     this.loadDateData();
                 },
 
-                // Storage handlers
                 loadDateData() {
                     const saved = localStorage.getItem(`fitpulse_data_${this.selectedDate}`);
                     if (saved) {
@@ -498,19 +480,35 @@
                 // Nutrition logic
                 openAddFoodModal(meal) {
                     this.activeMeal = meal;
+                    this.editIndex = null;
                     this.newFood = { name: '', calories: null, p: null, c: null, f: null };
+                    this.showFoodModal = true;
+                },
+
+                openEditFoodModal(meal, idx, food) {
+                    this.activeMeal = meal;
+                    this.editIndex = idx;
+                    this.newFood = { ...food };
                     this.showFoodModal = true;
                 },
 
                 saveFoodItem() {
                     if (!this.newFood.name) return;
-                    this.foodLogs[this.activeMeal].push({
+                    
+                    const foodData = {
                         name: this.newFood.name,
                         calories: Number(this.newFood.calories) || 0,
                         p: Number(this.newFood.p) || 0,
                         c: Number(this.newFood.c) || 0,
                         f: Number(this.newFood.f) || 0,
-                    });
+                    };
+
+                    if (this.editIndex !== null) {
+                        this.foodLogs[this.activeMeal][this.editIndex] = foodData;
+                    } else {
+                        this.foodLogs[this.activeMeal].push(foodData);
+                    }
+
                     this.showFoodModal = false;
                     this.saveDateData();
                     this.$nextTick(() => this.refreshIcons());
@@ -519,6 +517,7 @@
                 removeFood(meal, index) {
                     this.foodLogs[meal].splice(index, 1);
                     this.saveDateData();
+                    this.$nextTick(() => this.refreshIcons());
                 },
 
                 get consumedCalories() {
