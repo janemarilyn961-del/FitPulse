@@ -107,7 +107,7 @@
                         <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg"><i data-lucide="clock" class="w-5 h-5"></i></div>
                         <div>
                             <div class="text-[10px] text-slate-400">Duration</div>
-                            <div class="text-sm font-bold text-indigo-400" x-text="formattedWorkoutTimer"></div>
+                            <div class="text-sm font-bold" x-text="workoutMetrics.duration + ' mins'"></div>
                         </div>
                     </div>
                     <div class="bg-slate-800/50 border border-slate-700/50 p-3 rounded-xl flex items-center gap-3">
@@ -196,55 +196,32 @@
         <!-- TAB 3: WORKOUT (Hevy Style) -->
         <div x-show="currentTab === 'workout'" class="space-y-6" x-cloak>
             
-            <!-- Workout Control Header & Live Timer -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-xl">
+            <!-- Workout Control Header -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
                 <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                        <span class="font-bold text-slate-200">Active Workout Session</span>
-                        <span x-show="isTimerRunning" class="flex h-2 w-2 relative">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                    </div>
-                    <button @click="showTemplateModal = true" class="text-xs text-emerald-400 font-medium flex items-center gap-1 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/20 transition">
-                        <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i> Templates
+                    <span class="font-bold text-slate-200">Active Workout Session</span>
+                    <button @click="showTemplateModal = true" class="text-xs text-emerald-400 font-medium flex items-center gap-1 bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">
+                        <i data-lucide="folder-plus" class="w-3 h-3"></i> Templates
                     </button>
                 </div>
-
-                <!-- Hevy Style Live Stopwatch Controller -->
-                <div class="bg-slate-800/70 rounded-xl p-3 border border-slate-700/50 flex items-center justify-between">
-                    <div>
-                        <div class="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">Workout Duration</div>
-                        <div class="text-2xl font-extrabold text-indigo-400 font-mono" x-text="formattedWorkoutTimer"></div>
+                <div class="flex items-center gap-3 pt-2">
+                    <div class="flex-1 bg-slate-800 rounded-xl p-2.5 text-center border border-slate-700/50">
+                        <div class="text-[10px] text-slate-400">Duration (mins)</div>
+                        <input type="number" x-model.number="activeSession.duration" class="bg-transparent text-center text-sm font-bold text-white focus:outline-none w-full">
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button @click="toggleTimer()" :class="isTimerRunning ? 'bg-amber-600/20 text-amber-400 border-amber-500/30' : 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30'" class="px-3 py-2 text-xs font-bold rounded-xl border flex items-center gap-1 transition">
-                            <i :data-lucide="isTimerRunning ? 'pause' : 'play'" class="w-4 h-4"></i>
-                            <span x-text="isTimerRunning ? 'Pause' : 'Start'"></span>
-                        </button>
-                        <button @click="resetTimer()" class="p-2 text-slate-400 hover:text-rose-400 bg-slate-800 rounded-xl border border-slate-700/50 transition">
-                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                        </button>
-                    </div>
+                    <button @click="addExerciseToSession()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs py-3 rounded-xl transition flex items-center justify-center gap-1">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Exercise
+                    </button>
                 </div>
-
-                <button @click="addExerciseToSession()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs py-3 rounded-xl transition flex items-center justify-center gap-1">
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Exercise
-                </button>
             </div>
 
             <!-- Exercises Cards -->
             <div class="space-y-4">
                 <template x-for="(exercise, exIdx) in activeSession.exercises" :key="exIdx">
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-                        
-                        <!-- Header Exercise + Delete Exercise Button -->
-                        <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
-                            <input type="text" x-model="exercise.name" @input="saveWorkoutData()" class="bg-transparent font-bold text-slate-200 focus:bg-slate-800 rounded px-1 text-sm focus:outline-none" placeholder="Exercise Name">
-                            
-                            <button @click="removeExercise(exIdx)" class="flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 px-2.5 py-1 rounded-lg border border-rose-500/20 transition">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Exercise
-                            </button>
+                        <div class="flex justify-between items-center">
+                            <input type="text" x-model="exercise.name" class="bg-transparent font-bold text-slate-200 focus:bg-slate-800 rounded px-1 text-sm focus:outline-none" placeholder="Exercise Name">
+                            <button @click="removeExercise(exIdx)" class="text-slate-500 hover:text-rose-400"><i data-lucide="x" class="w-4 h-4"></i></button>
                         </div>
 
                         <!-- Sets Table -->
@@ -261,17 +238,13 @@
                                     <span class="col-span-2 text-xs font-bold text-slate-400" x-text="setIdx + 1"></span>
                                     <input type="number" x-model.number="set.weight" @input="saveWorkoutData()" class="col-span-4 bg-slate-800 text-center text-xs text-white rounded-lg p-1.5 border border-slate-700/50 focus:outline-none">
                                     <input type="number" x-model.number="set.reps" @input="saveWorkoutData()" class="col-span-4 bg-slate-800 text-center text-xs text-white rounded-lg p-1.5 border border-slate-700/50 focus:outline-none">
-                                    
-                                    <button @click="removeSet(exIdx, setIdx)" class="col-span-2 text-rose-400 hover:text-rose-300 flex justify-center p-1 rounded hover:bg-rose-500/10 transition">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
+                                    <button @click="removeSet(exIdx, setIdx)" class="col-span-2 text-slate-500 hover:text-rose-400 flex justify-center"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                                 </div>
                             </template>
                         </div>
 
-                        <!-- Add Set Button -->
-                        <button @click="addSet(exIdx)" class="w-full py-2 bg-slate-800/60 hover:bg-slate-800 text-slate-300 text-xs font-medium rounded-xl border border-dashed border-slate-700 transition flex items-center justify-center gap-1">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Set
+                        <button @click="addSet(exIdx)" class="w-full py-1.5 bg-slate-800/60 hover:bg-slate-800 text-slate-300 text-xs font-medium rounded-xl border border-dashed border-slate-700 transition flex items-center justify-center gap-1">
+                            <i data-lucide="plus" class="w-3 h-3"></i> Add Set
                         </button>
                     </div>
                 </template>
@@ -350,7 +323,6 @@
                         </div>
                     </div>
                 </template>
-                <div x-show="workoutTemplates.length === 0" class="text-xs text-slate-500 italic py-2 text-center">No saved templates yet.</div>
             </div>
 
             <button @click="saveCurrentAsTemplate()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-semibold rounded-xl border border-slate-700 transition">
@@ -388,11 +360,6 @@
                 showTemplateModal: false,
                 activeMeal: '',
 
-                // Live Stopwatch Timer
-                workoutTimerSeconds: 0,
-                timerInterval: null,
-                isTimerRunning: false,
-
                 // Target Nutrition
                 targets: { calories: 2000, p: 150, c: 200, f: 65 },
                 tempTargets: {},
@@ -403,15 +370,9 @@
                 currentWeight: '',
 
                 // Workout Log
-                activeSession: { durationSeconds: 0, exercises: [] },
+                activeSession: { duration: 45, exercises: [] },
                 workoutTemplates: [
-                    { 
-                        title: 'Push Day (Default)', 
-                        exercises: [
-                            { name: 'Bench Press', sets: [{ weight: 60, reps: 10 }, { weight: 65, reps: 8 }] },
-                            { name: 'Incline Dumbbell Press', sets: [{ weight: 22, reps: 10 }] }
-                        ] 
-                    }
+                    { title: 'Push Day', exercises: [{ name: 'Bench Press', sets: [{ weight: 60, reps: 10 }] }] }
                 ],
 
                 // Charts & Computed
@@ -440,20 +401,17 @@
                     if (saved) {
                         const parsed = JSON.parse(saved);
                         this.foodLogs = parsed.foodLogs || { breakfast: [], lunch: [], dinner: [], snacks: [] };
-                        this.activeSession = parsed.activeSession || { durationSeconds: 0, exercises: [] };
+                        this.activeSession = parsed.activeSession || { duration: 0, exercises: [] };
                         this.currentWeight = parsed.currentWeight || '';
-                        this.workoutTimerSeconds = this.activeSession.durationSeconds || 0;
                     } else {
                         this.foodLogs = { breakfast: [], lunch: [], dinner: [], snacks: [] };
-                        this.activeSession = { durationSeconds: 0, exercises: [] };
+                        this.activeSession = { duration: 0, exercises: [] };
                         this.currentWeight = '';
-                        this.workoutTimerSeconds = 0;
                     }
                     this.updateChart();
                 },
 
                 saveDateData() {
-                    this.activeSession.durationSeconds = this.workoutTimerSeconds;
                     const payload = {
                         foodLogs: this.foodLogs,
                         activeSession: this.activeSession,
@@ -478,37 +436,6 @@
 
                 saveWeight() {
                     this.saveDateData();
-                },
-
-                // Live Timer Methods (Hevy Style)
-                toggleTimer() {
-                    if (this.isTimerRunning) {
-                        clearInterval(this.timerInterval);
-                        this.isTimerRunning = false;
-                    } else {
-                        this.isTimerRunning = true;
-                        this.timerInterval = setInterval(() => {
-                            this.workoutTimerSeconds++;
-                            if (this.workoutTimerSeconds % 5 === 0) {
-                                this.saveDateData(); // Auto save every 5 seconds
-                            }
-                        }, 1000);
-                    }
-                },
-
-                resetTimer() {
-                    if (confirm("Reset workout timer for today?")) {
-                        clearInterval(this.timerInterval);
-                        this.isTimerRunning = false;
-                        this.workoutTimerSeconds = 0;
-                        this.saveDateData();
-                    }
-                },
-
-                get formattedWorkoutTimer() {
-                    const mins = Math.floor(this.workoutTimerSeconds / 60);
-                    const secs = this.workoutTimerSeconds % 60;
-                    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
                 },
 
                 // Nutrition logic
@@ -552,9 +479,6 @@
 
                 // Workout logic
                 addExerciseToSession() {
-                    if (!this.isTimerRunning) {
-                        this.toggleTimer(); // Auto start timer when adding exercise
-                    }
                     this.activeSession.exercises.push({
                         name: 'New Exercise',
                         sets: [{ weight: 0, reps: 0 }]
@@ -594,53 +518,39 @@
                         });
                     }
                     return {
+                        duration: this.activeSession.duration || 0,
                         sets: sets,
                         volume: volume,
                         maxWeight: maxWeight
                     };
                 },
 
-                // Templates Logic Fix
+                // Templates Logic
                 loadTemplates() {
                     const saved = localStorage.getItem('fitpulse_templates');
-                    if (saved) {
-                        this.workoutTemplates = JSON.parse(saved);
-                    }
+                    if (saved) this.workoutTemplates = JSON.parse(saved);
                 },
 
                 saveCurrentAsTemplate() {
-                    if (this.activeSession.exercises.length === 0) {
-                        alert("Add at least one exercise to save a template.");
-                        return;
-                    }
                     const name = prompt("Enter Template Name:");
                     if (!name) return;
-
-                    const newTmpl = {
+                    this.workoutTemplates.push({
                         title: name,
                         exercises: JSON.parse(JSON.stringify(this.activeSession.exercises))
-                    };
-
-                    this.workoutTemplates.push(newTmpl);
+                    });
                     localStorage.setItem('fitpulse_templates', JSON.stringify(this.workoutTemplates));
-                    alert(`Template "${name}" saved successfully!`);
                 },
 
                 loadTemplate(tmpl) {
                     this.activeSession.exercises = JSON.parse(JSON.stringify(tmpl.exercises));
                     this.showTemplateModal = false;
-                    if (!this.isTimerRunning) {
-                        this.toggleTimer(); // Start timer automatically when loading template
-                    }
                     this.saveDateData();
                     this.$nextTick(() => lucide.createIcons());
                 },
 
                 deleteTemplate(idx) {
-                    if (confirm("Delete this template?")) {
-                        this.workoutTemplates.splice(idx, 1);
-                        localStorage.setItem('fitpulse_templates', JSON.stringify(this.workoutTemplates));
-                    }
+                    this.workoutTemplates.splice(idx, 1);
+                    localStorage.setItem('fitpulse_templates', JSON.stringify(this.workoutTemplates));
                 },
 
                 // Chart initialization
